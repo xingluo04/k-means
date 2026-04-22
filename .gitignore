@@ -1,0 +1,57 @@
+# 虚拟环境（通常很大，不应上传）
+venv/
+env/
+.venv/
+
+# Python 缓存和编译文件
+__pycache__/
+*.py[cod]
+*.so
+
+# IDE 配置（.vscode, .idea 等）
+.vscode/
+.idea/
+
+# Jupyter Notebook 检查点
+.ipynb_checkpoints/
+
+# 本地环境变量（含密钥）
+.env
+
+# 数据集（如果文件很大，建议放在云盘而非 Git）
+data/*.csv
+*.pkl
+*.joblib
+
+# 编译输出
+target/
+*.class
+
+# 依赖包
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# 日志
+*.log
+
+# 依赖目录（非常大）
+node_modules/
+
+# 环境变量
+.env
+
+# 构建输出
+dist/
+build/
+
+# 日志
+npm-debug.log*
+yarn-debug.log*
