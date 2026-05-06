@@ -19,7 +19,7 @@ __pycache__/
 .env
 
 # 数据集（如果文件很大，建议放在云盘而非 Git）
-data/*.csv
+data/*
 *.pkl
 *.joblib
 
@@ -38,6 +38,8 @@ mvnw.cmd
 .classpath
 .project
 .settings/
+.claude/
+CLAUDE.md
 
 # 日志
 *.log

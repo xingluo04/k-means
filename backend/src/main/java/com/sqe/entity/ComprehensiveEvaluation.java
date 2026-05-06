@@ -14,7 +14,7 @@ public class ComprehensiveEvaluation {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long studentId;
-    private String semester;
+    private String academicYear;
     private BigDecimal moralScore;
     private BigDecimal academicScore;
     private BigDecimal physicalScore;

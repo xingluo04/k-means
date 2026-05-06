@@ -51,12 +51,13 @@
               <el-icon><EditPen /></el-icon>
               <span>评价管理</span>
             </template>
-            <el-menu-item index="/moral">品德发展</el-menu-item>
-            <el-menu-item index="/academic">学业发展</el-menu-item>
-            <el-menu-item index="/physical">体能发展</el-menu-item>
-            <el-menu-item index="/art">艺术素养</el-menu-item>
-            <el-menu-item index="/practice">实践创新</el-menu-item>
+            <el-menu-item index="/moral">德育测评</el-menu-item>
+            <el-menu-item index="/academic">智育测评</el-menu-item>
+            <el-menu-item index="/physical">体育测评</el-menu-item>
+            <el-menu-item index="/art">美育测评</el-menu-item>
+            <el-menu-item index="/practice">劳动教育测评</el-menu-item>
             <el-menu-item index="/comprehensive">综合评价</el-menu-item>
+            <el-menu-item index="/import">数据导入</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/cluster">
             <el-icon><TrendCharts /></el-icon>

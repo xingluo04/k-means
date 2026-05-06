@@ -19,9 +19,9 @@ public interface MoralEvaluationMapper extends BaseMapper<MoralEvaluation> {
             "LEFT JOIN sys_user eu ON me.evaluator_id = eu.id " +
             "<where>" +
             "<if test='studentId != null'> AND me.student_id = #{studentId}</if>" +
-            "<if test='semester != null and semester != \"\"'> AND me.semester = #{semester}</if>" +
+            "<if test='academicYear != null and academicYear != \"\"'> AND me.academic_year = #{academicYear}</if>" +
             "</where>" +
             " ORDER BY me.id DESC" +
             "</script>")
-    IPage<MoralEvaluation> selectEvalPage(Page<MoralEvaluation> page, @Param("studentId") Long studentId, @Param("semester") String semester);
+    IPage<MoralEvaluation> selectEvalPage(Page<MoralEvaluation> page, @Param("studentId") Long studentId, @Param("academicYear") String academicYear);
 }

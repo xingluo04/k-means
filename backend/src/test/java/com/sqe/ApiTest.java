@@ -208,7 +208,7 @@ public class ApiTest {
     @Test
     @Order(71)
     void testDimensionAvg() throws Exception {
-        mockMvc.perform(get("/api/dashboard/dimension-avg?semester=2024-2")
+        mockMvc.perform(get("/api/dashboard/dimension-avg?academicYear=2023-2024")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
@@ -218,7 +218,7 @@ public class ApiTest {
     @Test
     @Order(80)
     void testClusterResults() throws Exception {
-        mockMvc.perform(get("/api/cluster/results?semester=2024-2")
+        mockMvc.perform(get("/api/cluster/results?academicYear=2023-2024")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));

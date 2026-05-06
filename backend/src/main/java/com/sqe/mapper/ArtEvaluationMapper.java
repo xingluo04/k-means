@@ -19,9 +19,9 @@ public interface ArtEvaluationMapper extends BaseMapper<ArtEvaluation> {
             "LEFT JOIN sys_user eu ON ae.evaluator_id = eu.id " +
             "<where>" +
             "<if test='studentId != null'> AND ae.student_id = #{studentId}</if>" +
-            "<if test='semester != null and semester != \"\"'> AND ae.semester = #{semester}</if>" +
+            "<if test='academicYear != null and academicYear != \"\"'> AND ae.academic_year = #{academicYear}</if>" +
             "</where>" +
             " ORDER BY ae.id DESC" +
             "</script>")
-    IPage<ArtEvaluation> selectEvalPage(Page<ArtEvaluation> page, @Param("studentId") Long studentId, @Param("semester") String semester);
+    IPage<ArtEvaluation> selectEvalPage(Page<ArtEvaluation> page, @Param("studentId") Long studentId, @Param("academicYear") String academicYear);
 }

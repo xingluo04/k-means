@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 体育素质评价实体
+ * 体育测评实体
  */
 @Data
 @TableName("physical_evaluation")
@@ -14,27 +14,13 @@ public class PhysicalEvaluation {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long studentId;
-    private String semester;
-    /* 体质健康 */
-    private BigDecimal fitnessTestScore;
-    private Integer isExempt;
-    private BigDecimal fitnessScore;
-    /* 体育课与日常锻炼 */
-    private BigDecimal peCourseScore;
-    private Integer sportsTeamMember;
-    private Integer sportsActivityCount;
-    private Integer dailyExerciseCount;
-    private BigDecimal exerciseScore;
-    /* 体育竞赛 */
-    private Integer sportsCompetitionCount;
-    private String sportsHighestLevel;
-    private String sportsBestRank;
-    private Integer brokeRecord;
-    private BigDecimal sportsCompetitionScore;
-    /* 扣分事项 */
-    private Integer absentSportsCount;
+    private String academicYear;
+    /* 体育表现 */
+    private BigDecimal physicalPerformance;
+    /* 奖励分 */
+    private BigDecimal physicalBonus;
+    /* 扣分与汇总 */
     private BigDecimal physicalDeduction;
-    /* 汇总 */
     private BigDecimal totalScore;
     private String remark;
     private Long evaluatorId;

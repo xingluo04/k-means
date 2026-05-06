@@ -75,7 +75,7 @@ async function loadOverview() {
 async function loadCharts() {
   /* 雷达图 */
   try {
-    const dimRes = await request.get('/api/dashboard/dimension-avg', { params: { semester: '2024-2' } })
+    const dimRes = await request.get('/api/dashboard/dimension-avg', { params: { academicYear: '2024-2025' } })
     if (dimRes.data && dimRes.data.dimensions) {
       const radarChart = echarts.init(radarRef.value)
       radarChart.setOption({
@@ -102,7 +102,7 @@ async function loadCharts() {
 
   /* 饼图 */
   try {
-    const clusterRes = await request.get('/api/dashboard/cluster-distribution', { params: { semester: '2024-2' } })
+    const clusterRes = await request.get('/api/dashboard/cluster-distribution', { params: { academicYear: '2024-2025' } })
     if (clusterRes.data && clusterRes.data.length > 0) {
       const pieChart = echarts.init(pieRef.value)
       pieChart.setOption({
@@ -123,7 +123,7 @@ async function loadCharts() {
 
   /* 柱状图 */
   try {
-    const scoreRes = await request.get('/api/dashboard/score-distribution', { params: { semester: '2024-2' } })
+    const scoreRes = await request.get('/api/dashboard/score-distribution', { params: { academicYear: '2024-2025' } })
     if (scoreRes.data && scoreRes.data.labels) {
       const barChart = echarts.init(barRef.value)
       barChart.setOption({

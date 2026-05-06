@@ -18,27 +18,23 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
-    /* 获取统计概览 */
     @GetMapping("/overview")
     public Result<Map<String, Object>> overview() {
         return Result.success(dashboardService.getOverview());
     }
 
-    /* 获取各维度平均分 */
     @GetMapping("/dimension-avg")
-    public Result<Map<String, Object>> dimensionAvg(@RequestParam(defaultValue = "2024-2") String semester) {
-        return Result.success(dashboardService.getDimensionAvg(semester));
+    public Result<Map<String, Object>> dimensionAvg(@RequestParam(defaultValue = "2023-2024") String academicYear) {
+        return Result.success(dashboardService.getDimensionAvg(academicYear));
     }
 
-    /* 获取聚类分布 */
     @GetMapping("/cluster-distribution")
-    public Result<List<Map<String, Object>>> clusterDistribution(@RequestParam(defaultValue = "2024-2") String semester) {
-        return Result.success(dashboardService.getClusterDistribution(semester));
+    public Result<List<Map<String, Object>>> clusterDistribution(@RequestParam(defaultValue = "2023-2024") String academicYear) {
+        return Result.success(dashboardService.getClusterDistribution(academicYear));
     }
 
-    /* 获取成绩分布 */
     @GetMapping("/score-distribution")
-    public Result<Map<String, Object>> scoreDistribution(@RequestParam(defaultValue = "2024-2") String semester) {
-        return Result.success(dashboardService.getScoreDistribution(semester));
+    public Result<Map<String, Object>> scoreDistribution(@RequestParam(defaultValue = "2023-2024") String academicYear) {
+        return Result.success(dashboardService.getScoreDistribution(academicYear));
     }
 }

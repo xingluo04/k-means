@@ -31,41 +31,50 @@ public class EvaluationService {
     @Autowired
     private ComprehensiveEvaluationMapper comprehensiveMapper;
 
-    /* 品德评价分页查询 */
-    public IPage<MoralEvaluation> moralPage(int current, int size, Long studentId, String semester) {
-        return moralMapper.selectEvalPage(new Page<>(current, size), studentId, semester);
+    /* 德育评价分页查询 */
+    public IPage<MoralEvaluation> moralPage(int current, int size, Long studentId, String academicYear) {
+        return moralMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear);
     }
 
-    /* 保存品德评价：德育实践+品德表现(6项均值)+荣誉+社会工作+突出事例-扣分 */
+    /* 保存德育评价：德育总分 = (德育实践基础分 + 品德表现小计 + 德育奖励分小计) / 3 - 扣分 */
     public void saveMoral(MoralEvaluation eval) {
-        BigDecimal conductAvg = eval.getPoliticalThoughtScore()
-                .add(eval.getIntegrityScore())
-                .add(eval.getLearningAttitudeScore())
-                .add(eval.getDisciplineScore())
-                .add(eval.getCollectiveScore())
-                .add(eval.getCivilityScore())
-                .divide(BigDecimal.valueOf(6), 2, RoundingMode.HALF_UP);
-        BigDecimal sum = eval.getMoralActivityScore()
-                .add(conductAvg)
-                .add(eval.getHonorScore())
-                .add(eval.getSocialWorkScore())
-                .add(eval.getOutstandingScore());
-        BigDecimal total = sum.divide(BigDecimal.valueOf(5), 2, RoundingMode.HALF_UP)
-                .subtract(eval.getDeductionScore());
+        // 计算品德表现小计
+        BigDecimal characterSubtotal = eval.getPoliticalThought()
+                .add(eval.getIntegrity())
+                .add(eval.getLearningAttitude())
+                .add(eval.getDiscipline())
+                .add(eval.getCollective())
+                .add(eval.getCivility());
+        eval.setMoralCharacterSubtotal(characterSubtotal);
+
+        // 计算奖励分小计
+        BigDecimal bonusSubtotal = eval.getMoralHonor()
+                .add(eval.getMoralSocialWork())
+                .add(eval.getMoralOutstanding());
+        eval.setMoralBonusSubtotal(bonusSubtotal);
+
+        // 总分 = (实践分 + 品德表现 + 奖励分) / 3 - 扣分
+        BigDecimal sum = eval.getMoralPracticeBase()
+                .add(characterSubtotal)
+                .add(bonusSubtotal);
+        BigDecimal total = sum.divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP)
+                .subtract(eval.getMoralDeduction());
         eval.setTotalScore(total.max(BigDecimal.ZERO));
         if (eval.getId() != null) moralMapper.updateById(eval);
         else moralMapper.insert(eval);
     }
 
-    /* 学业评价分页查询 */
-    public IPage<AcademicEvaluation> academicPage(int current, int size, Long studentId, String semester) {
-        return academicMapper.selectEvalPage(new Page<>(current, size), studentId, semester);
+    /* 智育评价分页查询 */
+    public IPage<AcademicEvaluation> academicPage(int current, int size, Long studentId, String academicYear) {
+        return academicMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear);
     }
 
-    /* 保存学业评价：学业表现+科研竞赛-扣分 */
+    /* 保存智育评价：智育总分 = (学分加权平均成绩 + 智育奖励分小计) / 2 - 扣分 */
     public void saveAcademic(AcademicEvaluation eval) {
-        BigDecimal sum = eval.getAcademicPerformanceScore()
-                .add(eval.getResearchScore());
+        BigDecimal bonusSubtotal = eval.getAcademicBonus().add(eval.getAcademicOther());
+        eval.setAcademicBonusSubtotal(bonusSubtotal);
+
+        BigDecimal sum = eval.getWeightedAvgScore().add(bonusSubtotal);
         BigDecimal total = sum.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP)
                 .subtract(eval.getAcademicDeduction());
         eval.setTotalScore(total.max(BigDecimal.ZERO));
@@ -73,32 +82,29 @@ public class EvaluationService {
         else academicMapper.insert(eval);
     }
 
-    /* 体能评价分页查询 */
-    public IPage<PhysicalEvaluation> physicalPage(int current, int size, Long studentId, String semester) {
-        return physicalMapper.selectEvalPage(new Page<>(current, size), studentId, semester);
+    /* 体育评价分页查询 */
+    public IPage<PhysicalEvaluation> physicalPage(int current, int size, Long studentId, String academicYear) {
+        return physicalMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear);
     }
 
-    /* 保存体能评价：体质健康+体育课锻炼+体育竞赛-扣分 */
+    /* 保存体育评价：体育总分 = (体育表现分 + 体育奖励分) / 2 - 扣分 */
     public void savePhysical(PhysicalEvaluation eval) {
-        BigDecimal sum = eval.getFitnessScore()
-                .add(eval.getExerciseScore())
-                .add(eval.getSportsCompetitionScore());
-        BigDecimal total = sum.divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP)
+        BigDecimal sum = eval.getPhysicalPerformance().add(eval.getPhysicalBonus());
+        BigDecimal total = sum.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP)
                 .subtract(eval.getPhysicalDeduction());
         eval.setTotalScore(total.max(BigDecimal.ZERO));
         if (eval.getId() != null) physicalMapper.updateById(eval);
         else physicalMapper.insert(eval);
     }
 
-    /* 艺术评价分页查询 */
-    public IPage<ArtEvaluation> artPage(int current, int size, Long studentId, String semester) {
-        return artMapper.selectEvalPage(new Page<>(current, size), studentId, semester);
+    /* 美育评价分页查询 */
+    public IPage<ArtEvaluation> artPage(int current, int size, Long studentId, String academicYear) {
+        return artMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear);
     }
 
-    /* 保存艺术评价：美育课程活动+文艺竞赛-扣分 */
+    /* 保存美育评价：美育总分 = (美育表现分 + 美育奖励分) / 2 - 扣分 */
     public void saveArt(ArtEvaluation eval) {
-        BigDecimal sum = eval.getArtActivityScore()
-                .add(eval.getArtCompetitionScore());
+        BigDecimal sum = eval.getArtPerformance().add(eval.getArtBonus());
         BigDecimal total = sum.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP)
                 .subtract(eval.getArtDeduction());
         eval.setTotalScore(total.max(BigDecimal.ZERO));
@@ -106,19 +112,16 @@ public class EvaluationService {
         else artMapper.insert(eval);
     }
 
-    /* 实践评价分页查询 */
-    public IPage<PracticeEvaluation> practicePage(int current, int size, Long studentId, String semester) {
-        return practiceMapper.selectEvalPage(new Page<>(current, size), studentId, semester);
+    /* 劳动教育评价分页查询 */
+    public IPage<PracticeEvaluation> practicePage(int current, int size, Long studentId, String academicYear) {
+        return practiceMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear);
     }
 
-    /* 保存实践评价：日常劳动+劳动课程+志愿服务+实践竞赛-扣分 */
+    /* 保存劳动教育评价：劳动教育总分 = (劳动教育表现分 + 劳动教育奖励分) / 2 - 扣分 */
     public void savePractice(PracticeEvaluation eval) {
-        BigDecimal sum = eval.getDailyLaborScore()
-                .add(eval.getLaborCourseScore())
-                .add(eval.getVolunteerScore())
-                .add(eval.getPracticeCompetitionScore());
-        BigDecimal total = sum.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP)
-                .subtract(eval.getPracticeDeduction());
+        BigDecimal sum = eval.getLaborPerformance().add(eval.getLaborBonus());
+        BigDecimal total = sum.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP)
+                .subtract(eval.getLaborDeduction());
         eval.setTotalScore(total.max(BigDecimal.ZERO));
         if (eval.getId() != null) practiceMapper.updateById(eval);
         else practiceMapper.insert(eval);
@@ -126,22 +129,22 @@ public class EvaluationService {
 
     /* 综合评价分页查询 */
     public IPage<ComprehensiveEvaluation> comprehensivePage(int current, int size, Long studentId,
-                                                             String semester, Integer clusterLabel, String keyword) {
-        return comprehensiveMapper.selectEvalPage(new Page<>(current, size), studentId, semester, clusterLabel, keyword);
+                                                             String academicYear, Integer clusterLabel, String keyword) {
+        return comprehensiveMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear, clusterLabel, keyword);
     }
 
-    public ComprehensiveEvaluation getStudentComprehensive(Long studentId, String semester) {
+    public ComprehensiveEvaluation getStudentComprehensive(Long studentId, String academicYear) {
         return comprehensiveMapper.selectOne(
                 new LambdaQueryWrapper<ComprehensiveEvaluation>()
                         .eq(ComprehensiveEvaluation::getStudentId, studentId)
-                        .eq(ComprehensiveEvaluation::getSemester, semester));
+                        .eq(ComprehensiveEvaluation::getAcademicYear, academicYear));
     }
 
     public List<ComprehensiveEvaluation> getStudentAllSemesters(Long studentId) {
         return comprehensiveMapper.selectList(
                 new LambdaQueryWrapper<ComprehensiveEvaluation>()
                         .eq(ComprehensiveEvaluation::getStudentId, studentId)
-                        .orderByAsc(ComprehensiveEvaluation::getSemester));
+                        .orderByAsc(ComprehensiveEvaluation::getAcademicYear));
     }
 
     public void deleteMoral(Long id) { moralMapper.deleteById(id); }

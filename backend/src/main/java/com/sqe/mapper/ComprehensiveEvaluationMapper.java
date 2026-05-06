@@ -19,7 +19,7 @@ public interface ComprehensiveEvaluationMapper extends BaseMapper<ComprehensiveE
             "LEFT JOIN class_info ci ON si.class_id = ci.id " +
             "<where>" +
             "<if test='studentId != null'> AND ce.student_id = #{studentId}</if>" +
-            "<if test='semester != null and semester != \"\"'> AND ce.semester = #{semester}</if>" +
+            "<if test='academicYear != null and academicYear != \"\"'> AND ce.academic_year = #{academicYear}</if>" +
             "<if test='clusterLabel != null'> AND ce.cluster_label = #{clusterLabel}</if>" +
             "<if test='keyword != null and keyword != \"\"'> AND (su.real_name LIKE CONCAT('%',#{keyword},'%') OR si.student_no LIKE CONCAT('%',#{keyword},'%'))</if>" +
             "</where>" +
@@ -27,7 +27,7 @@ public interface ComprehensiveEvaluationMapper extends BaseMapper<ComprehensiveE
             "</script>")
     IPage<ComprehensiveEvaluation> selectEvalPage(Page<ComprehensiveEvaluation> page,
                                                    @Param("studentId") Long studentId,
-                                                   @Param("semester") String semester,
+                                                   @Param("academicYear") String academicYear,
                                                    @Param("clusterLabel") Integer clusterLabel,
                                                    @Param("keyword") String keyword);
 }

@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 艺术素质评价实体
+ * 美育测评实体
  */
 @Data
 @TableName("art_evaluation")
@@ -14,22 +14,13 @@ public class ArtEvaluation {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long studentId;
-    private String semester;
-    /* 美育课程与活动 */
-    private Integer artCourseCount;
-    private BigDecimal artCourseAvgScore;
-    private Integer artGroupMember;
-    private Integer artActivityCount;
-    private BigDecimal artActivityScore;
-    /* 文艺竞赛 */
-    private Integer artCompetitionCount;
-    private String artCompetitionCategory;
-    private String artHighestLevel;
-    private BigDecimal artCompetitionScore;
-    /* 扣分事项 */
-    private Integer absentArtCount;
+    private String academicYear;
+    /* 美育表现 */
+    private BigDecimal artPerformance;
+    /* 奖励分 */
+    private BigDecimal artBonus;
+    /* 扣分与汇总 */
     private BigDecimal artDeduction;
-    /* 汇总 */
     private BigDecimal totalScore;
     private String remark;
     private Long evaluatorId;

@@ -59,220 +59,156 @@ CREATE TABLE student_info (
     INDEX idx_class (class_id)
 ) COMMENT '学生信息表';
 
--- 品德素质评价表
+-- 德育测评表（权重25%）
 CREATE TABLE moral_evaluation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL COMMENT '学生信息ID',
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年，如2023-2024',
     -- 德育实践
-    moral_activity_count INT DEFAULT 0 COMMENT '德育实践活动参与次数',
-    moral_activity_score DECIMAL(5,2) DEFAULT 0 COMMENT '德育实践得分',
-    -- 品德表现
-    political_thought_score DECIMAL(5,2) DEFAULT 0 COMMENT '政治思想得分',
-    integrity_score DECIMAL(5,2) DEFAULT 0 COMMENT '诚信原则得分',
-    learning_attitude_score DECIMAL(5,2) DEFAULT 0 COMMENT '学习态度得分',
-    discipline_score DECIMAL(5,2) DEFAULT 0 COMMENT '纪律作风得分',
-    collective_score DECIMAL(5,2) DEFAULT 0 COMMENT '集体观念得分',
-    civility_score DECIMAL(5,2) DEFAULT 0 COMMENT '文明礼貌得分',
-    -- 荣誉与奖励
-    personal_honor_count INT DEFAULT 0 COMMENT '个人荣誉数',
-    collective_honor_count INT DEFAULT 0 COMMENT '集体荣誉数',
-    honor_score DECIMAL(5,2) DEFAULT 0 COMMENT '荣誉奖励得分',
-    military_training_level VARCHAR(20) COMMENT '军训等级',
-    -- 社会工作
-    cadre_duty VARCHAR(100) COMMENT '学生干部职务',
-    cadre_duration INT DEFAULT 0 COMMENT '任职时长(月)',
-    social_work_score DECIMAL(5,2) DEFAULT 0 COMMENT '社会工作得分',
-    -- 突出事例
-    outstanding_event_count INT DEFAULT 0 COMMENT '突出事例数',
-    blood_donation_count INT DEFAULT 0 COMMENT '无偿献血次数',
-    outstanding_score DECIMAL(5,2) DEFAULT 0 COMMENT '突出事例得分',
-    -- 扣分事项
-    criticism_count INT DEFAULT 0 COMMENT '通报批评次数',
-    discipline_punishment VARCHAR(50) COMMENT '纪律处分类型',
-    absent_activity_count INT DEFAULT 0 COMMENT '无故缺席活动次数',
-    deduction_score DECIMAL(5,2) DEFAULT 0 COMMENT '扣分合计',
-    -- 汇总
-    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '品德素质总分',
+    moral_practice_base DECIMAL(5,2) DEFAULT 0 COMMENT '德育实践基础分（满分30）',
+    -- 品德表现（满分50）
+    political_thought DECIMAL(5,2) DEFAULT 0 COMMENT '政治思想（满分30）',
+    integrity DECIMAL(5,2) DEFAULT 0 COMMENT '诚信原则（满分3）',
+    learning_attitude DECIMAL(5,2) DEFAULT 0 COMMENT '学习态度（满分5）',
+    discipline DECIMAL(5,2) DEFAULT 0 COMMENT '纪律作风（满分5）',
+    collective DECIMAL(5,2) DEFAULT 0 COMMENT '集体观念（满分5）',
+    civility DECIMAL(5,2) DEFAULT 0 COMMENT '文明礼貌（满分2）',
+    moral_character_subtotal DECIMAL(5,2) DEFAULT 0 COMMENT '品德表现小计（满分50）',
+    -- 奖励分（满分20）
+    moral_honor DECIMAL(5,2) DEFAULT 0 COMMENT '德育荣誉分（满分10）',
+    moral_social_work DECIMAL(5,2) DEFAULT 0 COMMENT '德育社会工作分（满分5）',
+    moral_outstanding DECIMAL(5,2) DEFAULT 0 COMMENT '德育突出事例分（满分5）',
+    moral_bonus_subtotal DECIMAL(5,2) DEFAULT 0 COMMENT '德育奖励分小计（满分20）',
+    -- 扣分与汇总
+    moral_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '德育表现扣分',
+    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '德育测评总分',
     remark TEXT COMMENT '备注',
     evaluator_id BIGINT COMMENT '评价人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_student (student_id),
-    INDEX idx_semester (semester)
-) COMMENT '品德素质评价表';
+    INDEX idx_academic_year (academic_year)
+) COMMENT '德育测评表';
 
--- 学业素质评价表
+-- 智育测评表（权重50%）
 CREATE TABLE academic_evaluation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL COMMENT '学生信息ID',
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
-    -- 学业表现
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年，如2023-2024',
+    -- 学业成绩
     weighted_avg_score DECIMAL(5,2) DEFAULT 0 COMMENT '学分加权平均成绩',
-    course_count INT DEFAULT 0 COMMENT '课程门数',
-    retake_count INT DEFAULT 0 COMMENT '重修/补考门数',
-    minor_count INT DEFAULT 0 COMMENT '辅修课程门数',
-    academic_performance_score DECIMAL(5,2) DEFAULT 0 COMMENT '学业表现得分',
-    -- 学科竞赛与科研
-    competition_count INT DEFAULT 0 COMMENT '竞赛获奖数',
-    competition_highest_level VARCHAR(20) COMMENT '竞赛最高级别',
-    paper_count INT DEFAULT 0 COMMENT '论文发表数',
-    paper_first_author INT DEFAULT 0 COMMENT '第一作者论文数',
-    research_project_count INT DEFAULT 0 COMMENT '科研项目参与数',
-    research_host_count INT DEFAULT 0 COMMENT '主持科研项目数',
-    tech_promotion_count INT DEFAULT 0 COMMENT '科技推广活动次数',
-    research_score DECIMAL(5,2) DEFAULT 0 COMMENT '学科竞赛与科研得分',
-    -- 扣分事项
-    exam_cheat_count INT DEFAULT 0 COMMENT '考试违纪作弊次数',
-    class_violation_count INT DEFAULT 0 COMMENT '课堂违纪次数',
-    academic_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '学业扣分合计',
-    -- 汇总
-    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '学业素质总分',
+    -- 奖励分（满分10）
+    academic_bonus DECIMAL(5,2) DEFAULT 0 COMMENT '智育奖励分（满分10）',
+    academic_other DECIMAL(5,2) DEFAULT 0 COMMENT '智育其他分',
+    academic_bonus_subtotal DECIMAL(5,2) DEFAULT 0 COMMENT '智育奖励分小计',
+    -- 扣分与汇总
+    academic_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '智育表现扣分',
+    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '智育测评总分',
     remark TEXT COMMENT '备注',
     evaluator_id BIGINT COMMENT '评价人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_student (student_id),
-    INDEX idx_semester (semester)
-) COMMENT '学业素质评价表';
+    INDEX idx_academic_year (academic_year)
+) COMMENT '智育测评表';
 
--- 体育素质评价表
+-- 体育测评表（权重8%）
 CREATE TABLE physical_evaluation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL COMMENT '学生信息ID',
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
-    -- 体质健康
-    fitness_test_score DECIMAL(5,2) DEFAULT 0 COMMENT '体质健康测试成绩',
-    is_exempt TINYINT DEFAULT 0 COMMENT '是否免测：0-否，1-是',
-    fitness_score DECIMAL(5,2) DEFAULT 0 COMMENT '体质健康得分',
-    -- 体育课与日常锻炼
-    pe_course_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育课成绩',
-    sports_team_member TINYINT DEFAULT 0 COMMENT '是否校/院运动队成员',
-    sports_activity_count INT DEFAULT 0 COMMENT '体育活动参与次数',
-    daily_exercise_count INT DEFAULT 0 COMMENT '日常锻炼打卡次数',
-    exercise_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育课与锻炼得分',
-    -- 体育竞赛
-    sports_competition_count INT DEFAULT 0 COMMENT '体育竞赛参赛次数',
-    sports_highest_level VARCHAR(20) COMMENT '竞赛最高级别',
-    sports_best_rank VARCHAR(20) COMMENT '最好名次',
-    broke_record TINYINT DEFAULT 0 COMMENT '是否破纪录',
-    sports_competition_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育竞赛得分',
-    -- 扣分事项
-    absent_sports_count INT DEFAULT 0 COMMENT '无故缺席体育活动次数',
-    physical_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '体育扣分合计',
-    -- 汇总
-    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育素质总分',
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年，如2023-2024',
+    -- 体育表现（满分80）
+    physical_performance DECIMAL(5,2) DEFAULT 0 COMMENT '体育表现分（满分80）',
+    -- 奖励分（满分20）
+    physical_bonus DECIMAL(5,2) DEFAULT 0 COMMENT '体育奖励分（满分20）',
+    -- 扣分与汇总
+    physical_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '体育表现扣分',
+    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育测评总分',
     remark TEXT COMMENT '备注',
     evaluator_id BIGINT COMMENT '评价人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_student (student_id),
-    INDEX idx_semester (semester)
-) COMMENT '体育素质评价表';
+    INDEX idx_academic_year (academic_year)
+) COMMENT '体育测评表';
 
--- 艺术素质评价表
+-- 美育测评表（权重8%）
 CREATE TABLE art_evaluation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL COMMENT '学生信息ID',
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
-    -- 美育课程与活动
-    art_course_count INT DEFAULT 0 COMMENT '美育选修课程门数',
-    art_course_avg_score DECIMAL(5,2) DEFAULT 0 COMMENT '美育课程平均成绩',
-    art_group_member TINYINT DEFAULT 0 COMMENT '是否艺术团成员',
-    art_activity_count INT DEFAULT 0 COMMENT '美育/文艺活动参与次数',
-    art_activity_score DECIMAL(5,2) DEFAULT 0 COMMENT '美育课程与活动得分',
-    -- 文艺竞赛
-    art_competition_count INT DEFAULT 0 COMMENT '文艺竞赛参赛次数',
-    art_competition_category VARCHAR(100) COMMENT '竞赛类别(美术/书法/音乐/舞蹈/征文/设计/视频等)',
-    art_highest_level VARCHAR(20) COMMENT '竞赛最高级别',
-    art_competition_score DECIMAL(5,2) DEFAULT 0 COMMENT '文艺竞赛得分',
-    -- 扣分事项
-    absent_art_count INT DEFAULT 0 COMMENT '无故缺席美育活动次数',
-    art_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '艺术扣分合计',
-    -- 汇总
-    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '艺术素质总分',
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年，如2023-2024',
+    -- 美育表现（满分70）
+    art_performance DECIMAL(5,2) DEFAULT 0 COMMENT '美育表现分（满分70）',
+    -- 奖励分（满分30）
+    art_bonus DECIMAL(5,2) DEFAULT 0 COMMENT '美育奖励分（满分30）',
+    -- 扣分与汇总
+    art_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '美育表现扣分',
+    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '美育测评总分',
     remark TEXT COMMENT '备注',
     evaluator_id BIGINT COMMENT '评价人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_student (student_id),
-    INDEX idx_semester (semester)
-) COMMENT '艺术素质评价表';
+    INDEX idx_academic_year (academic_year)
+) COMMENT '美育测评表';
 
--- 实践素质评价表
+-- 劳动教育测评表（权重9%）
 CREATE TABLE practice_evaluation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL COMMENT '学生信息ID',
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
-    -- 日常劳动
-    public_labor_count INT DEFAULT 0 COMMENT '公益/义务劳动参与次数',
-    dorm_hygiene_pass INT DEFAULT 0 COMMENT '宿舍卫生合格次数',
-    dorm_hygiene_fail INT DEFAULT 0 COMMENT '宿舍卫生不合格次数',
-    civilized_dorm TINYINT DEFAULT 0 COMMENT '是否文明寝室',
-    daily_labor_score DECIMAL(5,2) DEFAULT 0 COMMENT '日常劳动得分',
-    -- 劳动教育课程
-    labor_course_count INT DEFAULT 0 COMMENT '劳动教育课程门数',
-    labor_course_score DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育课程得分',
-    -- 社会实践与志愿服务
-    volunteer_hours DECIMAL(6,1) DEFAULT 0 COMMENT '志愿服务时长(小时)',
-    social_practice_count INT DEFAULT 0 COMMENT '社会实践活动次数',
-    study_style_activity_count INT DEFAULT 0 COMMENT '学风建设活动参与次数',
-    volunteer_score DECIMAL(5,2) DEFAULT 0 COMMENT '社会实践与志愿服务得分',
-    -- 实践竞赛
-    practice_competition_count INT DEFAULT 0 COMMENT '实践类竞赛获奖数',
-    practice_highest_level VARCHAR(20) COMMENT '竞赛最高级别',
-    practice_competition_score DECIMAL(5,2) DEFAULT 0 COMMENT '实践竞赛得分',
-    -- 扣分事项
-    waste_count INT DEFAULT 0 COMMENT '铺张浪费行为次数',
-    dirty_dorm_count INT DEFAULT 0 COMMENT '脏乱差寝室通报次数',
-    practice_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '实践扣分合计',
-    -- 汇总
-    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '实践素质总分',
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年，如2023-2024',
+    -- 劳动教育表现（满分70）
+    labor_performance DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育表现分（满分70）',
+    -- 奖励分（满分30）
+    labor_bonus DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育奖励分（满分30）',
+    -- 扣分与汇总
+    labor_deduction DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育表现扣分',
+    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育测评总分',
     remark TEXT COMMENT '备注',
     evaluator_id BIGINT COMMENT '评价人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_student (student_id),
-    INDEX idx_semester (semester)
-) COMMENT '实践素质评价表';
+    INDEX idx_academic_year (academic_year)
+) COMMENT '劳动教育测评表';
 
 -- 综合素质评价汇总表
 CREATE TABLE comprehensive_evaluation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL COMMENT '学生信息ID',
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
-    moral_score DECIMAL(5,2) DEFAULT 0 COMMENT '品德素质得分',
-    academic_score DECIMAL(5,2) DEFAULT 0 COMMENT '学业素质得分',
-    physical_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育素质得分',
-    art_score DECIMAL(5,2) DEFAULT 0 COMMENT '艺术素质得分',
-    practice_score DECIMAL(5,2) DEFAULT 0 COMMENT '实践素质得分',
-    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '综合总分',
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年，如2023-2024',
+    moral_score DECIMAL(5,2) DEFAULT 0 COMMENT '德育测评得分',
+    academic_score DECIMAL(5,2) DEFAULT 0 COMMENT '智育测评得分',
+    physical_score DECIMAL(5,2) DEFAULT 0 COMMENT '体育测评得分',
+    art_score DECIMAL(5,2) DEFAULT 0 COMMENT '美育测评得分',
+    practice_score DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育测评得分',
+    total_score DECIMAL(5,2) DEFAULT 0 COMMENT '综合总分（加权）',
     cluster_label INT COMMENT '聚类标签',
     cluster_name VARCHAR(50) COMMENT '聚类类别名称',
     suggestion TEXT COMMENT '个性化建议',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_student_semester (student_id, semester),
+    UNIQUE KEY uk_student_year (student_id, academic_year),
     INDEX idx_cluster (cluster_label)
 ) COMMENT '综合素质评价汇总表';
 
 -- 聚类分析结果表
 CREATE TABLE cluster_result (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    semester VARCHAR(20) NOT NULL COMMENT '学期',
+    academic_year VARCHAR(20) NOT NULL COMMENT '学年',
     cluster_count INT NOT NULL COMMENT '聚类数量',
     silhouette_score DECIMAL(5,4) COMMENT '轮廓系数',
     cluster_label INT NOT NULL COMMENT '聚类标签',
     cluster_name VARCHAR(50) COMMENT '聚类名称',
     student_count INT DEFAULT 0 COMMENT '该类学生数量',
-    avg_moral DECIMAL(5,2) DEFAULT 0,
-    avg_academic DECIMAL(5,2) DEFAULT 0,
-    avg_physical DECIMAL(5,2) DEFAULT 0,
-    avg_art DECIMAL(5,2) DEFAULT 0,
-    avg_practice DECIMAL(5,2) DEFAULT 0,
+    avg_moral DECIMAL(5,2) DEFAULT 0 COMMENT '德育平均分',
+    avg_academic DECIMAL(5,2) DEFAULT 0 COMMENT '智育平均分',
+    avg_physical DECIMAL(5,2) DEFAULT 0 COMMENT '体育平均分',
+    avg_art DECIMAL(5,2) DEFAULT 0 COMMENT '美育平均分',
+    avg_practice DECIMAL(5,2) DEFAULT 0 COMMENT '劳动教育平均分',
     description TEXT COMMENT '聚类描述',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_semester (semester)
+    INDEX idx_academic_year (academic_year)
 ) COMMENT '聚类分析结果表';
 
 -- 系统通知表

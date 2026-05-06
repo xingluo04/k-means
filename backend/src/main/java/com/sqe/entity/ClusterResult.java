@@ -13,9 +13,11 @@ import java.time.LocalDateTime;
 public class ClusterResult {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String semester;
+    private String academicYear;
     private Integer clusterCount;
     private BigDecimal silhouetteScore;
+    private BigDecimal daviesBouldinIndex;
+    private BigDecimal calinskiHarabaszIndex;
     private Integer clusterLabel;
     private String clusterName;
     private Integer studentCount;

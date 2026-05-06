@@ -19,21 +19,31 @@ public class ClusterController {
     @Autowired
     private ClusterService clusterService;
 
-    /* 执行聚类分析 */
     @PostMapping("/execute")
-    public Result<Map<String, Object>> execute(@RequestParam String semester,
+    public Result<Map<String, Object>> execute(@RequestParam String academicYear,
                                                 @RequestParam(defaultValue = "5") int clusterCount) {
         try {
-            Map<String, Object> result = clusterService.executeCluster(semester, clusterCount);
+            Map<String, Object> result = clusterService.executeCluster(academicYear, clusterCount);
             return Result.success(result);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    /* 获取聚类结果 */
     @GetMapping("/results")
-    public Result<List<ClusterResult>> results(@RequestParam String semester) {
-        return Result.success(clusterService.getClusterResults(semester));
+    public Result<List<ClusterResult>> results(@RequestParam String academicYear) {
+        return Result.success(clusterService.getClusterResults(academicYear));
+    }
+
+    @GetMapping("/optimal-k")
+    public Result<Map<String, Object>> optimalK(@RequestParam String academicYear,
+                                                 @RequestParam(defaultValue = "2") int minK,
+                                                 @RequestParam(defaultValue = "10") int maxK) {
+        try {
+            Map<String, Object> result = clusterService.findOptimalK(academicYear, minK, maxK);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
     }
 }

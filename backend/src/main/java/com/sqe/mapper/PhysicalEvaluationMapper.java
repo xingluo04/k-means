@@ -19,9 +19,9 @@ public interface PhysicalEvaluationMapper extends BaseMapper<PhysicalEvaluation>
             "LEFT JOIN sys_user eu ON pe.evaluator_id = eu.id " +
             "<where>" +
             "<if test='studentId != null'> AND pe.student_id = #{studentId}</if>" +
-            "<if test='semester != null and semester != \"\"'> AND pe.semester = #{semester}</if>" +
+            "<if test='academicYear != null and academicYear != \"\"'> AND pe.academic_year = #{academicYear}</if>" +
             "</where>" +
             " ORDER BY pe.id DESC" +
             "</script>")
-    IPage<PhysicalEvaluation> selectEvalPage(Page<PhysicalEvaluation> page, @Param("studentId") Long studentId, @Param("semester") String semester);
+    IPage<PhysicalEvaluation> selectEvalPage(Page<PhysicalEvaluation> page, @Param("studentId") Long studentId, @Param("academicYear") String academicYear);
 }

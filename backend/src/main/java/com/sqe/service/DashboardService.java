@@ -26,7 +26,6 @@ public class DashboardService {
     @Autowired
     private ClusterResultMapper clusterResultMapper;
 
-    /* 获取统计概览数据 */
     public Map<String, Object> getOverview() {
         Map<String, Object> data = new HashMap<>();
         data.put("studentCount", userMapper.selectCount(
@@ -38,11 +37,10 @@ public class DashboardService {
         return data;
     }
 
-    /* 获取各维度平均分数据 */
-    public Map<String, Object> getDimensionAvg(String semester) {
+    public Map<String, Object> getDimensionAvg(String academicYear) {
         List<ComprehensiveEvaluation> evals = comprehensiveMapper.selectList(
                 new LambdaQueryWrapper<ComprehensiveEvaluation>()
-                        .eq(ComprehensiveEvaluation::getSemester, semester));
+                        .eq(ComprehensiveEvaluation::getAcademicYear, academicYear));
         Map<String, Object> data = new HashMap<>();
         if (evals.isEmpty()) return data;
 
@@ -52,7 +50,7 @@ public class DashboardService {
         double avgArt = evals.stream().mapToDouble(e -> e.getArtScore().doubleValue()).average().orElse(0);
         double avgPractice = evals.stream().mapToDouble(e -> e.getPracticeScore().doubleValue()).average().orElse(0);
 
-        data.put("dimensions", Arrays.asList("品德发展", "学业发展", "体能发展", "艺术素养", "实践创新"));
+        data.put("dimensions", Arrays.asList("德育发展", "智育发展", "体育发展", "美育发展", "劳动教育发展"));
         data.put("values", Arrays.asList(
                 Math.round(avgMoral * 100.0) / 100.0,
                 Math.round(avgAcademic * 100.0) / 100.0,
@@ -62,11 +60,10 @@ public class DashboardService {
         return data;
     }
 
-    /* 获取聚类分布数据 */
-    public List<Map<String, Object>> getClusterDistribution(String semester) {
+    public List<Map<String, Object>> getClusterDistribution(String academicYear) {
         List<ClusterResult> results = clusterResultMapper.selectList(
                 new LambdaQueryWrapper<ClusterResult>()
-                        .eq(ClusterResult::getSemester, semester)
+                        .eq(ClusterResult::getAcademicYear, academicYear)
                         .orderByAsc(ClusterResult::getClusterLabel));
         return results.stream().map(r -> {
             Map<String, Object> item = new HashMap<>();
@@ -76,11 +73,10 @@ public class DashboardService {
         }).collect(Collectors.toList());
     }
 
-    /* 获取成绩分布数据 */
-    public Map<String, Object> getScoreDistribution(String semester) {
+    public Map<String, Object> getScoreDistribution(String academicYear) {
         List<ComprehensiveEvaluation> evals = comprehensiveMapper.selectList(
                 new LambdaQueryWrapper<ComprehensiveEvaluation>()
-                        .eq(ComprehensiveEvaluation::getSemester, semester));
+                        .eq(ComprehensiveEvaluation::getAcademicYear, academicYear));
         Map<String, Object> data = new HashMap<>();
         int[] ranges = new int[5];
         String[] labels = {"60分以下", "60-69分", "70-79分", "80-89分", "90分以上"};
