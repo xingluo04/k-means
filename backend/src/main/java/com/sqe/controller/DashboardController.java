@@ -37,4 +37,9 @@ public class DashboardController {
     public Result<Map<String, Object>> scoreDistribution(@RequestParam(defaultValue = "2023-2024") String academicYear) {
         return Result.success(dashboardService.getScoreDistribution(academicYear));
     }
+
+    @GetMapping("/class-comparison")
+    public Result<Map<String, Object>> classComparison(@RequestParam(defaultValue = "2024-2025") String academicYear) {
+        return Result.success(dashboardService.getClassComparison(academicYear));
+    }
 }

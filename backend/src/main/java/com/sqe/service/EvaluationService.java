@@ -129,15 +129,13 @@ public class EvaluationService {
 
     /* 综合评价分页查询 */
     public IPage<ComprehensiveEvaluation> comprehensivePage(int current, int size, Long studentId,
-                                                             String academicYear, Integer clusterLabel, String keyword) {
-        return comprehensiveMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear, clusterLabel, keyword);
+                                                             String academicYear, Integer clusterLabel,
+                                                             Long classId, String keyword) {
+        return comprehensiveMapper.selectEvalPage(new Page<>(current, size), studentId, academicYear, clusterLabel, classId, keyword);
     }
 
     public ComprehensiveEvaluation getStudentComprehensive(Long studentId, String academicYear) {
-        return comprehensiveMapper.selectOne(
-                new LambdaQueryWrapper<ComprehensiveEvaluation>()
-                        .eq(ComprehensiveEvaluation::getStudentId, studentId)
-                        .eq(ComprehensiveEvaluation::getAcademicYear, academicYear));
+        return comprehensiveMapper.selectDetail(studentId, academicYear);
     }
 
     public List<ComprehensiveEvaluation> getStudentAllSemesters(Long studentId) {

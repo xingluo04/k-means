@@ -13,7 +13,7 @@
 
     <el-alert
       v-if="lowDiscriminationDims.length > 0"
-      :title="'以下维度区分度较低(CV&lt;0.10)，对聚类贡献有限：' + lowDiscriminationDims.join('、')"
+      :title="'以下维度区分度较低(CV<0.10)，对聚类贡献有限：' + lowDiscriminationDims.join('、')"
       type="warning" show-icon :closable="false" style="margin-bottom:16px"
     />
 
@@ -81,6 +81,42 @@
       </el-col>
     </el-row>
 
+    <!-- ANOVA显著性检验结果 -->
+    <div class="chart-card" style="margin-top: 16px" v-if="anovaResult && anovaResult.dimensions">
+      <h3>聚类差异显著性检验（单因素ANOVA）</h3>
+      <el-table :data="anovaResult.dimensions" stripe size="small" style="margin-top: 12px">
+        <el-table-column prop="dimension" label="维度" width="100" />
+        <el-table-column prop="fValue" label="F值" width="120" />
+        <el-table-column prop="dfBetween" label="组间df" width="90" />
+        <el-table-column prop="dfWithin" label="组内df" width="90" />
+        <el-table-column prop="pValue" label="p值" width="120" />
+        <el-table-column prop="etaSquared" label="效应量η²" width="110" />
+        <el-table-column label="显著性" width="120">
+          <template #default="{ row }">
+            <el-tag v-if="row.highlySignificant" type="danger" effect="dark">极显著(p&lt;0.01)</el-tag>
+            <el-tag v-else-if="row.significant" type="warning">显著(p&lt;0.05)</el-tag>
+            <el-tag v-else type="info">不显著</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="info-desc" style="margin-top:8px">n={{ anovaResult.totalStudents }}, k={{ anovaResult.clusterCount }}。η²≥0.14为大效应，η²≥0.06为中等效应，η²≥0.01为小效应。</div>
+    </div>
+
+    <el-row :gutter="16" style="margin-top: 16px" v-if="pcaPoints && pcaPoints.length > 0">
+      <el-col :span="12">
+        <div class="chart-card">
+          <h3>PCA降维散点图（聚类分布）</h3>
+          <div ref="scatterRef" style="height: 400px"></div>
+        </div>
+      </el-col>
+      <el-col :span="12">
+        <div class="chart-card">
+          <h3>维度相关性热力图</h3>
+          <div ref="heatmapRef" style="height: 400px"></div>
+        </div>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="16" style="margin-top: 16px" v-if="kMetricsData">
       <el-col :span="24">
         <div class="chart-card">
@@ -108,10 +144,13 @@ const dbiScore = ref('-')
 const chiScore = ref('-')
 const lowDiscriminationDims = ref([])
 const kMetricsData = ref(null)
-const pieRef = ref(), radarRef = ref(), elbowRef = ref()
+const pcaPoints = ref(null)
+const correlationMatrix = ref(null)
+const anovaResult = ref(null)
+const pieRef = ref(), radarRef = ref(), scatterRef = ref(), heatmapRef = ref(), elbowRef = ref()
 
 const clusterType = (label) => ({ 0: 'success', 1: '', 2: 'warning', 3: 'info', 4: 'danger' }[label] || '')
-const colors = ['#10b981', '#0ea5e9', '#f59e0b', '#64748b', '#ef4444']
+const colors = ['#10b981', '#0ea5e9', '#f59e0b', '#64748b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1']
 
 async function executeCluster() {
   executing.value = true
@@ -127,6 +166,9 @@ async function executeCluster() {
         .filter(d => d.lowDiscrimination)
         .map(d => d.label)
     }
+    pcaPoints.value = data.pcaPoints || null
+    correlationMatrix.value = data.correlationMatrix || null
+    anovaResult.value = data.anovaResult || null
     kMetricsData.value = null
     ElMessage.success('聚类分析完成')
     nextTick(() => renderCharts())
@@ -147,9 +189,13 @@ async function recommendK() {
       silhouette: data.silhouetteByK,
       dbi: data.dbiByK,
       chi: data.chiByK,
-      optimalK: data.optimalK
+      gap: data.gapByK || [],
+      gapSE: data.gapSEByK || [],
+      optimalK: data.optimalK,
+      gapOptimalK: data.gapOptimalK
     }
-    ElMessage.success(`推荐K=${data.optimalK} (三指标投票)`)
+    const gapK = data.gapOptimalK ? `，Gap Statistic推荐K=${data.gapOptimalK}` : ''
+    ElMessage.success(`三指标投票推荐K=${data.optimalK}${gapK}`)
     nextTick(() => renderElbowChart())
   } catch (e) {
     ElMessage.error(e.message || '推荐失败')
@@ -158,25 +204,49 @@ async function recommendK() {
 
 async function loadResults() {
   const res = await request.get('/api/cluster/results', { params: { academicYear: academicYear.value } })
-  results.value = res.data
-  if (results.value.length > 0) {
-    silhouetteScore.value = results.value[0]?.silhouetteScore ?? '-'
-    dbiScore.value = results.value[0]?.daviesBouldinIndex ?? '-'
-    chiScore.value = results.value[0]?.calinskiHarabaszIndex ?? '-'
-    nextTick(() => renderCharts())
-  } else {
+  const data = res.data
+  if (!data.clusters || data.clusters.length === 0) {
+    results.value = []
     ElMessage.info('暂无聚类结果')
+    return
   }
+  results.value = data.clusters
+  silhouetteScore.value = data.silhouetteScore ?? data.clusters[0]?.silhouetteScore ?? '-'
+  dbiScore.value = data.daviesBouldinIndex ?? data.clusters[0]?.daviesBouldinIndex ?? '-'
+  chiScore.value = data.calinskiHarabaszIndex ?? data.clusters[0]?.calinskiHarabaszIndex ?? '-'
+  pcaPoints.value = data.pcaPoints || null
+  correlationMatrix.value = data.correlationMatrix || null
+  anovaResult.value = data.anovaResult || null
+  if (data.descriptiveStats) {
+    lowDiscriminationDims.value = data.descriptiveStats.dimensions
+      .filter(d => d.lowDiscrimination)
+      .map(d => d.label)
+  }
+  kMetricsData.value = null
+  nextTick(() => renderCharts())
 }
 
 function renderCharts() {
+  renderPieChart()
+  renderRadarChart()
+  if (pcaPoints.value && pcaPoints.value.length > 0) {
+    renderScatterChart()
+  }
+  if (correlationMatrix.value) {
+    renderHeatmapChart()
+  }
+}
+
+function renderPieChart() {
   const pieChart = echarts.init(pieRef.value)
   pieChart.setOption({
     tooltip: { trigger: 'item', formatter: '{b}: {c}人 ({d}%)' },
     color: colors,
     series: [{ type: 'pie', radius: ['40%', '70%'], itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 }, label: { formatter: '{b}\n{c}人' }, data: results.value.map(r => ({ name: r.clusterName, value: r.studentCount })) }]
   })
+}
 
+function renderRadarChart() {
   const radarChart = echarts.init(radarRef.value)
   radarChart.setOption({
     tooltip: {},
@@ -187,25 +257,85 @@ function renderCharts() {
   })
 }
 
+function renderScatterChart() {
+  const chart = echarts.init(scatterRef.value)
+  const clusterLabels = [...new Set(pcaPoints.value.map(p => p.cluster))]
+  const series = clusterLabels.map((label, i) => ({
+    name: results.value.find(r => r.clusterLabel === label)?.clusterName || `聚类${label}`,
+    type: 'scatter',
+    data: pcaPoints.value.filter(p => p.cluster === label).map(p => [p.x, p.y]),
+    symbolSize: 8,
+    itemStyle: { color: colors[i % colors.length], opacity: 0.75 },
+    emphasis: { itemStyle: { borderColor: '#333', borderWidth: 1 } }
+  }))
+  chart.setOption({
+    tooltip: { trigger: 'item', formatter: p => `${p.seriesName}<br/>PC1: ${p.value[0]}<br/>PC2: ${p.value[1]}` },
+    legend: { data: series.map(s => s.name), bottom: 0 },
+    grid: { left: 50, right: 30, top: 20, bottom: 40 },
+    xAxis: { type: 'value', name: '主成分1', nameLocation: 'center', nameGap: 25, splitLine: { lineStyle: { type: 'dashed' } } },
+    yAxis: { type: 'value', name: '主成分2', nameLocation: 'center', nameGap: 35, splitLine: { lineStyle: { type: 'dashed' } } },
+    series
+  })
+}
+
+function renderHeatmapChart() {
+  const chart = echarts.init(heatmapRef.value)
+  const dimLabels = ['德育', '智育', '体育', '美育', '劳动教育']
+  const data = []
+  for (let i = 0; i < correlationMatrix.value.length; i++) {
+    for (let j = 0; j < correlationMatrix.value[i].length; j++) {
+      data.push({ value: [j, i, correlationMatrix.value[i][j]] })
+    }
+  }
+  chart.setOption({
+    tooltip: { position: 'top', formatter: p => `${dimLabels[p.value[1]]} - ${dimLabels[p.value[0]]}<br/>相关系数: ${p.value[2].toFixed(3)}` },
+    grid: { left: 80, right: 20, top: 20, bottom: 80 },
+    xAxis: { type: 'category', data: dimLabels, axisLabel: { rotate: 0 }, position: 'top', axisLine: { onZero: false } },
+    yAxis: { type: 'category', data: dimLabels, inverse: true },
+    visualMap: { min: -1, max: 1, calculable: true, orient: 'horizontal', left: 'center', bottom: 0,
+      inRange: { color: ['#4393c3', '#f7f7f7', '#d73027'] } },
+    series: [{
+      type: 'heatmap', data, label: { show: true, formatter: p => p.value[2].toFixed(3), fontSize: 13 },
+      itemStyle: { borderColor: '#fff', borderWidth: 2, borderRadius: 4 },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } }
+    }]
+  })
+}
+
 function renderElbowChart() {
   if (!elbowRef.value || !kMetricsData.value) return
   const chart = echarts.init(elbowRef.value)
   const ks = kMetricsData.value.silhouette.map(d => d.k)
+  const series = [
+    { name: '轮廓系数', type: 'line', data: kMetricsData.value.silhouette.map(d => d.value),
+      markPoint: { data: [{ coord: [kMetricsData.value.optimalK, kMetricsData.value.silhouette.find(d => d.k === kMetricsData.value.optimalK)?.value || 0], name: '最优K', symbol: 'pin', symbolSize: 40 }] } },
+    { name: 'DBI', type: 'line', data: kMetricsData.value.dbi.map(d => d.value) },
+    { name: 'CHI (缩放)', type: 'line', yAxisIndex: 1, data: kMetricsData.value.chi.map(d => d.value) }
+  ]
+  if (kMetricsData.value.gap && kMetricsData.value.gap.length > 0) {
+    series.push({
+      name: 'Gap Statistic',
+      type: 'line',
+      yAxisIndex: 2,
+      data: kMetricsData.value.gap.map(d => d.value),
+      markPoint: {
+        data: kMetricsData.value.gapOptimalK ? [{ coord: [kMetricsData.value.gapOptimalK, kMetricsData.value.gap.find(d => d.k === kMetricsData.value.gapOptimalK)?.value || 0], name: `Gap K=${kMetricsData.value.gapOptimalK}`, symbol: 'roundRect', symbolSize: 50 }] : []
+      },
+      lineStyle: { type: 'dashed', width: 2 },
+      itemStyle: { color: '#8b5cf6' }
+    })
+  }
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['轮廓系数', 'DBI', 'CHI (缩放)'], bottom: 0 },
-    grid: { left: 50, right: 50, bottom: 40, top: 20 },
+    legend: { data: series.map(s => s.name), bottom: 0 },
+    grid: { left: 50, right: 80, bottom: 40, top: 20 },
     xAxis: { type: 'category', data: ks, name: 'K值' },
     yAxis: [
       { type: 'value', name: '轮廓系数 / DBI' },
-      { type: 'value', name: 'CHI' }
+      { type: 'value', name: 'CHI' },
+      { type: 'value', name: 'Gap值', show: kMetricsData.value.gap && kMetricsData.value.gap.length > 0 }
     ],
-    series: [
-      { name: '轮廓系数', type: 'line', data: kMetricsData.value.silhouette.map(d => d.value),
-        markPoint: { data: [{ coord: [kMetricsData.value.optimalK, kMetricsData.value.silhouette.find(d => d.k === kMetricsData.value.optimalK)?.value || 0], name: '最优K', symbol: 'pin', symbolSize: 40 }] } },
-      { name: 'DBI', type: 'line', data: kMetricsData.value.dbi.map(d => d.value) },
-      { name: 'CHI (缩放)', type: 'line', yAxisIndex: 1, data: kMetricsData.value.chi.map(d => d.value) }
-    ]
+    series
   })
 }
 </script>

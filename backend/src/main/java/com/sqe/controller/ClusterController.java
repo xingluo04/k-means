@@ -1,12 +1,10 @@
 package com.sqe.controller;
 
 import com.sqe.common.Result;
-import com.sqe.entity.ClusterResult;
 import com.sqe.service.ClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,8 +29,8 @@ public class ClusterController {
     }
 
     @GetMapping("/results")
-    public Result<List<ClusterResult>> results(@RequestParam String academicYear) {
-        return Result.success(clusterService.getClusterResults(academicYear));
+    public Result<Map<String, Object>> results(@RequestParam String academicYear) {
+        return Result.success(clusterService.getClusterResultsWithDetails(academicYear));
     }
 
     @GetMapping("/optimal-k")

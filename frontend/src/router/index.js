@@ -12,6 +12,12 @@ const routes = [
     component: () => import('../views/Register.vue')
   },
   {
+    path: '/report',
+    name: 'PrintReport',
+    component: () => import('../views/PrintReport.vue'),
+    meta: { title: '评价报告' }
+  },
+  {
     path: '/',
     component: () => import('../layout/Layout.vue'),
     redirect: '/dashboard',
@@ -45,7 +51,7 @@ const router = createRouter({
 /* 路由守卫 */
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  if (to.path === '/login' || to.path === '/register') {
+  if (to.path === '/login' || to.path === '/register' || to.path === '/report') {
     next()
   } else if (!token) {
     next('/login')

@@ -40,6 +40,8 @@ mvnw.cmd
 .settings/
 .claude/
 CLAUDE.md
+scripts/
+docs/
 
 # 日志
 *.log

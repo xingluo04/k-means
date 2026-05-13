@@ -136,8 +136,9 @@ public class EvaluationController {
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) String academicYear,
             @RequestParam(required = false) Integer clusterLabel,
+            @RequestParam(required = false) Long classId,
             @RequestParam(required = false) String keyword) {
-        return Result.success(evaluationService.comprehensivePage(current, size, studentId, academicYear, clusterLabel, keyword));
+        return Result.success(evaluationService.comprehensivePage(current, size, studentId, academicYear, clusterLabel, classId, keyword));
     }
 
     @GetMapping("/comprehensive/detail")

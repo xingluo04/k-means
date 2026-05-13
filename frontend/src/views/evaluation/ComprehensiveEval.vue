@@ -2,6 +2,9 @@
   <div class="page-container">
     <div class="search-bar">
       <el-select v-model="query.academicYear" placeholder="选择学年" clearable style="width: 160px" @change="loadData"><el-option label="2023-2024" value="2023-2024" /><el-option label="2024-2025" value="2024-2025" /></el-select>
+      <el-select v-model="query.classId" placeholder="选择班级" clearable style="width: 160px" @change="loadData">
+        <el-option v-for="c in classList" :key="c.id" :label="c.className" :value="c.id" />
+      </el-select>
       <el-input v-model="query.keyword" placeholder="搜索姓名/学号" clearable style="width: 180px" @clear="loadData" />
       <el-select v-model="query.clusterLabel" placeholder="聚类类别" clearable style="width: 160px" @change="loadData">
         <el-option label="全面优秀型" :value="0" /><el-option label="均衡发展型" :value="1" /><el-option label="学术艺术型" :value="2" /><el-option label="体能突出型" :value="3" /><el-option label="待提升型" :value="4" />
@@ -30,6 +33,12 @@
     <el-pagination class="pagination" background layout="total, prev, pager, next" :total="total" :page-size="query.size" v-model:current-page="query.current" @current-change="loadData" />
 
     <el-dialog v-model="detailVisible" title="综合素质评价详情" width="700px">
+      <template #header="{ close, titleId, titleClass }">
+        <div class="dialog-header">
+          <span :id="titleId" :class="titleClass">综合素质评价详情</span>
+          <el-button type="success" size="small" @click="printReport" style="margin-left: 12px">导出报告</el-button>
+        </div>
+      </template>
       <div v-if="detailData" class="detail-content">
         <el-descriptions :column="2" border>
           <el-descriptions-item label="学生姓名">{{ detailData.studentName }}</el-descriptions-item>
@@ -94,18 +103,7 @@
             <h5>行动建议</h5>
             <ul><li v-for="(item, i) in detailSuggestion.actionItems" :key="i">{{ item }}</li></ul>
           </div>
-          <div v-if="detailSuggestion.promotion" class="promotion-box">
-            <h5>提升路径</h5>
-            <p>{{ detailSuggestion.promotion.description }}</p>
-            <template v-if="detailSuggestion.promotion.gaps && detailSuggestion.promotion.gaps.length > 0">
-              <div v-for="g in detailSuggestion.promotion.gaps" :key="g.dimKey" style="margin-top:8px">
-                <span class="dim-label">{{ g.dimLabel }}：</span>
-                <span>当前 {{ g.currentScore }} → 目标 {{ g.targetScore }}（差 {{ g.gap }} 分）</span>
-                <el-progress :percentage="Math.round(Math.min(100, g.currentScore / g.targetScore * 100))" :stroke-width="10" :color="'#f59e0b'" />
-              </div>
-            </template>
-          </div>
-          <div v-if="detailSuggestion.trend" class="trend-box">
+<div v-if="detailSuggestion.trend" class="trend-box">
             <h5>成长趋势（{{ detailSuggestion.trend.prevYear }} 对比）</h5>
             <p class="trend-highlight">{{ detailSuggestion.trend.highlight }}</p>
             <div class="trend-changes">
@@ -147,10 +145,10 @@ import { ref, reactive, onMounted, nextTick, computed } from 'vue'
 import * as echarts from 'echarts'
 import request from '../../utils/request'
 
-const loading = ref(false), tableData = ref([]), total = ref(0)
+const loading = ref(false), tableData = ref([]), total = ref(0), classList = ref([])
 const detailVisible = ref(false), growthVisible = ref(false), detailData = ref(null)
 const detailRadarRef = ref(), growthChartRef = ref()
-const query = reactive({ current: 1, size: 10, academicYear: '', keyword: '', clusterLabel: null })
+const query = reactive({ current: 1, size: 10, academicYear: '', classId: null, keyword: '', clusterLabel: null })
 
 const clusterType = (label) => ({ 0: 'success', 1: '', 2: 'warning', 3: 'info', 4: 'danger' }[label] || '')
 const detailSuggestion = computed(() => {
@@ -175,7 +173,14 @@ function levelColor(level) {
   return { critical: '#ef4444', warning: '#f59e0b', normal: '#0ea5e9', good: '#10b981', excellent: '#6366f1' }[level] || '#0ea5e9'
 }
 
-onMounted(() => loadData())
+onMounted(() => { loadClasses(); loadData() })
+
+async function loadClasses() {
+  try {
+    const res = await request.get('/api/class/list')
+    classList.value = res.data || []
+  } catch { /* 忽略 */ }
+}
 
 async function loadData() {
   loading.value = true
@@ -196,6 +201,12 @@ function viewDetail(row) {
       series: [{ type: 'radar', data: [{ value: [row.moralScore, row.academicScore, row.physicalScore, row.artScore, row.practiceScore], name: row.studentName, areaStyle: { color: 'rgba(14,165,233,0.2)' }, lineStyle: { color: '#0ea5e9' }, itemStyle: { color: '#0ea5e9' } }] }]
     })
   })
+}
+
+function printReport() {
+  if (!detailData.value) return
+  const { studentId, academicYear } = detailData.value
+  window.open(`/report?studentId=${studentId}&academicYear=${academicYear}`, '_blank')
 }
 
 async function viewGrowth(row) {
@@ -224,6 +235,7 @@ async function viewGrowth(row) {
 
 <style scoped>
 .page-container { background: #fff; border-radius: 10px; padding: 20px; }
+.dialog-header { display: flex; align-items: center; width: 100%; }
 .search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .pagination { margin-top: 16px; display: flex; justify-content: flex-end; }
 .suggestion-box { margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0ea5e9; }
@@ -247,9 +259,6 @@ async function viewGrowth(row) {
 .action-box { margin-top: 12px; padding: 16px; background: #eff6ff; border-radius: 10px; border-left: 4px solid #0ea5e9; }
 .action-box h5 { font-size: 14px; margin-bottom: 8px; color: #0369a1; }
 .action-box ul { margin: 0; padding-left: 20px; color: #334155; font-size: 13px; line-height: 1.8; }
-.promotion-box { margin-top: 12px; padding: 16px; background: #fefce8; border-radius: 10px; border-left: 4px solid #eab308; }
-.promotion-box h5 { font-size: 14px; margin-bottom: 8px; color: #a16207; }
-.promotion-box p { color: #334155; font-size: 13px; }
 .trend-box { margin-top: 12px; padding: 16px; background: #f0fdf4; border-radius: 10px; border-left: 4px solid #10b981; }
 .trend-box h5 { font-size: 14px; margin-bottom: 8px; color: #15803d; }
 .trend-highlight { color: #334155; font-size: 13px; line-height: 1.6; }
